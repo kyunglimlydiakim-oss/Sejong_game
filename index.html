@@ -268,7 +268,7 @@ button:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
 .log { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 6px; }
 .log li {
   display: grid;
-  grid-template-columns: 4.2em 3.6em minmax(0, 1fr);
+  grid-template-columns: 4.2em 4.6em minmax(0, 1fr);
   gap: 8px;
   align-items: baseline;
   border-top: 1px solid var(--line);
@@ -277,7 +277,7 @@ button:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
 .log .who { font-size: 12px; color: var(--muted); }
 .log .who.me { color: var(--gold-hi); }
 .hud .vs { font-size: 0.7em; color: var(--muted); }
-.log .w { font-family: var(--font-display); font-size: 20px; }
+.log .w { font-family: var(--font-display); font-size: 20px; white-space: nowrap; }
 .log .def { font-size: 13px; color: var(--muted); min-width: 0; overflow-wrap: anywhere; }
 .log .def a { color: inherit; }
 .log-head { font-size: 12px; color: var(--muted); letter-spacing: 0.08em; margin: 4px 0 0; }
@@ -310,7 +310,8 @@ footer a { color: inherit; }
 }
 @media (max-width: 420px) {
   .hud .v { font-size: 18px; }
-  .log li { grid-template-columns: 3.6em 3.2em minmax(0, 1fr); }
+  .log li { grid-template-columns: 3.6em 4.4em minmax(0, 1fr); }
+  .log .w { font-size: 18px; }
 }
 </style>
 </head>
@@ -340,14 +341,14 @@ footer a { color: inherit; }
 
     <div class="timer" id="timer" aria-hidden="true"><i id="timerBar"></i></div>
     <form class="answer" id="form" autocomplete="off">
-      <input id="answer" name="answer" maxlength="4" placeholder="두 글자 낱말" lang="ko" aria-label="두 글자 낱말" disabled>
+      <input id="answer" name="answer" maxlength="6" placeholder="낱말" lang="ko" aria-label="낱말" disabled>
       <button type="submit" id="submit" aria-label="대답" disabled>대답</button>
     </form>
 
     <div class="overlay" id="overlay">
       <h2 id="ovTitle">그(?)와 함께 세종대왕</h2>
       <p class="quote" id="ovQuote">사람마다 쉽게 익혀 날마다 씀에 편하게 하고자 할 따름이니라<cite>『훈민정음』 어제 서문(1446)</cite></p>
-      <p class="rules" id="ovText">세종대왕이 초성 두 개를 내리면 그(?)가 먼저, 그다음 내가 번갈아 두 글자 낱말을 댄다. 내 차례에 10초 안에 못 대면 목숨이 하나 줄고, 셋을 다 잃으면 끝난다. 열 차례를 넘기면 다음 판으로 간다.</p>
+      <p class="rules" id="ovText">세종대왕이 초성을 내리면 그(?)가 먼저, 그다음 내가 번갈아 그 초성의 낱말을 댄다. 1판은 두 글자, 2판은 세 글자, 3판은 네 글자이고 이 순서가 되풀이된다. 내 차례에 10초 안에 못 대면 목숨이 하나 줄고, 셋을 다 잃으면 끝난다. 열 차례를 넘기면 다음 판으로 간다.</p>
       <button type="button" id="ovBtn">시작하기</button>
     </div>
   </div>
@@ -359,7 +360,8 @@ footer a { color: inherit; }
 
   <footer>
     판정: 국립국어원 <a href="https://stdict.korean.go.kr/" target="_blank" rel="noopener">표준국어대사전</a> 오픈 API(두 음절 어휘 표제어 일치 검색).
-    그(?)의 낱말과 오프라인 판정: 국립국어원 「한국어 학습용 어휘 목록」(2003) 중 두 글자 단어 <span id="poolSize">0</span>개, 공공누리 제1유형.
+    서버 연결이 없을 때는 「표준국어대사전」 내려받기 자료(2026. 6.) 중 두~네 글자 표제어 <span id="poolSize">0</span>개로 판정한다.
+    그(?)의 낱말은 「한국어기초사전」에서 골랐다. 사전 자료 출처: 국립국어원, <a href="https://creativecommons.org/licenses/by-sa/2.0/kr/" target="_blank" rel="noopener">CC BY-SA 2.0 KR</a>.
   </footer>
 </div>
 
@@ -370,9 +372,15 @@ footer a { color: inherit; }
   const CHO = "ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎ";
   const TURNS = 10;          // 한 판의 차례 수(그 5, 나 5)
   const LIMIT = 10000;       // 내 차례 제한 시간(ms)
-  const MIN_POOL = 12;       // 이만큼 낱말이 있는 초성 쌍만 낸다
-  const WORDS = window.SEJONG_WORDS || [];
-  const DICT = new Set(WORDS);
+  const LENGTHS = [2, 3, 4];  // 판마다 글자 수: 2 → 3 → 4 → 2 …
+  // 판정용 표제어: 글자 수별로 이어 붙인 문자열을 잘라 집합으로 만든다
+  const DICT = {};
+  for (const [n, str] of Object.entries(window.SEJONG_DICT || {})) {
+    const set = new Set();
+    for (let i = 0; i < str.length; i += +n) set.add(str.slice(i, i + +n));
+    DICT[n] = set;
+  }
+  const inDict = (w) => !!DICT[w.length]?.has(w);
 
   const $ = (id) => document.getElementById(id);
   const el = {
@@ -382,27 +390,25 @@ footer a { color: inherit; }
     timer: $("timer"), bar: $("timerBar"), form: $("form"), input: $("answer"), submit: $("submit"),
     msg: $("msg"), log: $("log"), poolSize: $("poolSize"),
   };
-  el.poolSize.textContent = WORDS.length.toLocaleString("ko-KR");
+  el.poolSize.textContent = Object.values(DICT).reduce((a, d) => a + d.size, 0).toLocaleString("ko-KR");
 
   const choOf = (ch) => {
     const c = ch.charCodeAt(0) - 0xac00;
     return c >= 0 && c < 11172 ? CHO[Math.floor(c / 588)] : "";
   };
-  const pairOf = (w) => choOf(w[0]) + choOf(w[1]);
+  const pairOf = (w) => [...w].map(choOf).join("");
   // 받침 유무에 따라 조사를 고른다(은/는, 이/가)
   const josa = (w, a, b) => {
     const c = w.charCodeAt(w.length - 1) - 0xac00;
     return w + (c >= 0 && c < 11172 && c % 28 ? a : b);
   };
 
-  // 초성 쌍별 낱말 창고
-  const POOL = new Map();
-  for (const w of WORDS) {
-    const p = pairOf(w);
-    if (!POOL.has(p)) POOL.set(p, []);
-    POOL.get(p).push(w);
-  }
-  const PAIRS = [...POOL.keys()].filter((p) => POOL.get(p).length >= MIN_POOL);
+  // 그(?)의 낱말 창고: 초성 → 낱말 목록
+  const POOL = new Map(Object.entries(window.SEJONG_RIVAL || {}).map(([k, v]) => [k, v.split(" ")]));
+  const PAIRS = { 2: [], 3: [], 4: [] };
+  for (const k of POOL.keys()) PAIRS[k.length]?.push(k);
+  // 그(?)의 딴소리
+  const MUTTER = ["생각하지 말잔 생각을 해 난", "자전거 타고 싶은 날씨다", "아도르노 좋아해?"];
   const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
   // 『훈민정음』 어제 서문·정인지 서문을 오늘 말로 옮긴 구절
@@ -422,7 +428,7 @@ footer a { color: inherit; }
     } catch (_) { online = false; }
     el.mode.innerHTML = online
       ? "판정 <b>표준국어대사전 연동</b>"
-      : "판정 <b>오프라인 단어 목록</b>";
+      : "판정 <b>표준국어대사전 내장 자료</b>";
   }
   const defCache = new Map();
   async function lookup(word) {
@@ -434,17 +440,18 @@ footer a { color: inherit; }
     return data;
   }
   async function judge(word) {
-    if (!online) return { found: DICT.has(word), source: "offline" };
+    if (!online) return { found: inDict(word), source: "offline" };
     try {
       const d = await lookup(word);
-      return { found: d.found, senses: d.senses, source: "stdict" };
+      // 실시간 검색에 없더라도 내려받기 자료에 있으면 인정한다(둘 다 표준국어대사전)
+      return { found: d.found || inDict(word), senses: d.senses, source: "stdict" };
     } catch (e) {
-      return { found: DICT.has(word), source: "offline", note: e.message };
+      return { found: inDict(word), source: "offline", note: e.message };
     }
   }
 
   // ---- 상태 ----
-  const S = { hearts: 3, round: 0, score: 0, rival: 0, pair: "", used: new Set(), t: 0, timer: null, deadline: 0, paused: 0, busy: false, best: 0, usedPairs: new Set() };
+  const S = { hearts: 3, round: 0, len: 2, score: 0, rival: 0, pair: "", used: new Set(), t: 0, timer: null, deadline: 0, paused: 0, busy: false, best: 0, usedPairs: new Set() };
   try { S.best = Number(localStorage.getItem("sejong-best")) || 0; } catch (_) {}
 
   function renderHud() {
@@ -525,8 +532,10 @@ footer a { color: inherit; }
   }
   function nextRound() {
     S.round += 1;
-    let choices = PAIRS.filter((p) => !S.usedPairs.has(p));
-    if (!choices.length) { S.usedPairs.clear(); choices = PAIRS; }
+    S.len = LENGTHS[(S.round - 1) % LENGTHS.length];
+    const all = PAIRS[S.len];
+    let choices = all.filter((p) => !S.usedPairs.has(p));
+    if (!choices.length) { all.forEach((p) => S.usedPairs.delete(p)); choices = all; }
     S.pair = pick(choices);
     S.usedPairs.add(S.pair);
     S.used = new Set();
@@ -535,8 +544,8 @@ footer a { color: inherit; }
     el.overlay.hidden = true;
     act("idle");
     el.cho.textContent = S.pair;
-    announce(`제${S.round}판 초성을 내리노라`);
-    taunt(S.round === 1 ? "내가 먼저 간다" : "이번엔 안 봐줘");
+    announce(`제${S.round}판 · ${S.len}글자 초성을 내리노라`);
+    taunt(S.round === 1 ? "내가 먼저 간다" : pick(["이번엔 안 봐줘", ...MUTTER]));
     renderHud();
     setMsg("");
     setTimeout(step, 1300);
@@ -564,7 +573,7 @@ footer a { color: inherit; }
       const w = pick(left);
       S.used.add(w);
       S.rival += 10 + Math.ceil((LIMIT - think) / 1000);
-      taunt(`<strong>${w}</strong>! 네 차례야`);
+      taunt(`<strong>${w}</strong>! ` + (Math.random() < 0.3 ? `<br>${pick(MUTTER)}` : "네 차례야"));
       addLog("그(?)", w);
     }
     renderHud();
@@ -628,7 +637,7 @@ footer a { color: inherit; }
       el.form.classList.remove("shake"); void el.form.offsetWidth; el.form.classList.add("shake");
       el.input.select();
     };
-    if (!/^[가-힣]{2}$/.test(word)) return reject("완성된 한글 두 글자로 대답해야 한다");
+    if (!new RegExp(`^[가-힣]{${S.len}}$`).test(word)) return reject(`완성된 한글 ${S.len}글자로 대답해야 한다`);
     if (pairOf(word) !== S.pair) return reject(`초성이 맞지 않는다. ${josa(word, "은", "는")} ${pairOf(word)}, 문제는 ${S.pair}`);
     if (S.used.has(word)) return reject("이번 판에 이미 나온 낱말이다");
 
@@ -642,15 +651,15 @@ footer a { color: inherit; }
       lockInput(false);
       el.input.focus();
       resumeTimer();
-      return reject(res.source === "stdict" ? `${josa(word, "은", "는")} 표준국어대사전 두 글자 어휘에 없다` : `${josa(word, "은", "는")} 내장 단어 목록에 없다`);
+      return reject(res.source === "stdict" ? `${josa(word, "은", "는")} 표준국어대사전에 없는 낱말이다` : `${josa(word, "은", "는")} 표준국어대사전 내장 자료에 없다`);
     }
     const secs = Math.max(0, Math.ceil(S.paused / 1000));
     S.used.add(word);
     S.score += 10 + secs;
     S.t += 1;
     addLog("나", word, res.senses);
-    setMsg(`맞았다! +${10 + secs}점` + (res.note ? ` (사전 연결이 끊겨 내장 목록으로 판정)` : ""), "good");
-    taunt(pick(["흥, 제법인데?", "그 정도는 나도 알아", "운이 좋았네", "오, 좀 하는데"]));
+    setMsg(`맞았다! +${10 + secs}점` + (res.note ? ` (사전 연결이 끊겨 내장 자료로 판정)` : ""), "good");
+    taunt(Math.random() < 0.35 ? pick(MUTTER) : pick(["흥, 제법인데?", "그 정도는 나도 알아", "운이 좋았네", "오, 좀 하는데"]));
     renderHud();
     await sleep(900);
     step();
@@ -682,7 +691,7 @@ footer a { color: inherit; }
 
   detectApi();
   act("idle");
-  el.cho.textContent = PAIRS.length ? pick(PAIRS) : "ㅅㅈ";
+  el.cho.textContent = PAIRS[2].length ? pick(PAIRS[2]) : "ㅅㅈ";
 })();
 </script>
 </body>

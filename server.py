@@ -35,12 +35,12 @@ def load_key():
 
 
 API_KEY = load_key()
-HANGUL_2 = re.compile(r"^[가-힣]{2}$")
+HANGUL = re.compile(r"^[가-힣]{2,4}$")
 _cache = {}
 
 
 def lookup(word):
-    """표준국어대사전에서 두 음절 어휘 표제어를 정확히 일치 검색한다."""
+    """표준국어대사전에서 같은 음절 수의 어휘 표제어를 정확히 일치 검색한다."""
     if word in _cache:
         return _cache[word]
     params = {
@@ -50,8 +50,8 @@ def lookup(word):
         "advanced": "y",
         "method": "exact",
         "type1": "word",
-        "letter_s": "2",
-        "letter_e": "2",
+        "letter_s": str(len(word)),
+        "letter_e": str(len(word)),
         "num": "10",
     }
     url = API_URL + "?" + urllib.parse.urlencode(params)
@@ -106,8 +106,8 @@ class Handler(SimpleHTTPRequestHandler):
             return self._json(200, {"stdict": bool(API_KEY)})
         if parsed.path == "/api/lookup":
             word = urllib.parse.parse_qs(parsed.query).get("q", [""])[0].strip()
-            if not HANGUL_2.match(word):
-                return self._json(400, {"error": "한글 두 글자만 검색할 수 있습니다."})
+            if not HANGUL.match(word):
+                return self._json(400, {"error": "한글 두~네 글자만 검색할 수 있습니다."})
             if not API_KEY:
                 return self._json(503, {"error": "STDICT_API_KEY가 설정되지 않았습니다."})
             try:
