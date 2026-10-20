@@ -1,4 +1,6 @@
 {
-  "regions": ["icn1"],
-  "cleanUrls": false
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "buildCommand": "",
+  "regions": ["icn1"]
 }
