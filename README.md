@@ -16,11 +16,12 @@
 
 ## 실행
 
-```bash
-# 표준국어대사전 연동 (인증키: https://stdict.korean.go.kr/openapi/openApiInfo.do)
-STDICT_API_KEY=발급받은키 python3 server.py
-# 브라우저에서 http://localhost:8000
-```
+1. 이 폴더에 `api_key.txt` 파일을 만들고 표준국어대사전 인증키(16진수 32자리)만 한 줄로 적는다.
+   이 파일은 `.gitignore`에 들어 있어 저장소에 올라가지 않는다.
+2. 이 폴더에서 `python3 server.py`(윈도우는 `python server.py`)를 실행한다.
+3. 브라우저에서 http://localhost:8000 을 연다. 오른쪽 위에 '판정 표준국어대사전 연동'이 뜨면 연결된 것이다.
+
+환경 변수로 넘겨도 된다: `STDICT_API_KEY=발급받은키 python3 server.py`
 
 인증키 없이 실행하면 오프라인 모드로 돌아간다. 이때는 내장 단어 목록으로 판정한다.
 파이썬 3.8 이상이면 되고, 외부 라이브러리는 필요 없다.

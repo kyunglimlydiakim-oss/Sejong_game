@@ -4,7 +4,9 @@
 표준국어대사전 오픈 API를 불러 준다. 표준국어대사전 API는 인증키가 필요하고
 브라우저에서 직접 부르면 CORS에 막히므로 이 서버가 중계한다.
 
-    STDICT_API_KEY=발급받은키 python3 server.py   # http://localhost:8000
+    python3 server.py   # http://localhost:8000
+
+인증키는 이 파일 옆 api_key.txt에 한 줄로 적거나, 환경 변수 STDICT_API_KEY로 넘긴다.
 
 인증키 발급: https://stdict.korean.go.kr/openapi/openApiInfo.do
 키 없이 실행하면 게임은 내장 단어 목록(오프라인 모드)으로 돌아간다.
@@ -19,9 +21,20 @@ import urllib.request
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 
 API_URL = "https://stdict.korean.go.kr/api/search.do"
-API_KEY = os.environ.get("STDICT_API_KEY", "").strip()
 PORT = int(os.environ.get("PORT", "8000"))
 ROOT = os.path.dirname(os.path.abspath(__file__))
+KEY_FILE = os.path.join(ROOT, "api_key.txt")  # 저장소에 올라가지 않도록 .gitignore에 넣었다
+
+
+def load_key():
+    key = os.environ.get("STDICT_API_KEY", "").strip()
+    if not key and os.path.exists(KEY_FILE):
+        with open(KEY_FILE, encoding="utf-8-sig") as f:
+            key = f.read().strip()
+    return key
+
+
+API_KEY = load_key()
 HANGUL_2 = re.compile(r"^[가-힣]{2}$")
 _cache = {}
 
