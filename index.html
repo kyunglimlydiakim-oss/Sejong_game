@@ -101,81 +101,83 @@ h1 .q { color: var(--gold-hi); }
 .hearts { color: var(--sun); letter-spacing: 2px; }
 .hearts .lost { color: rgba(242, 238, 227, 0.18); }
 
-/* 무대 */
+/* 무대: 광화문광장 밤 배경 그림(1214×1295) 위에 글자와 입력칸을 겹친다.
+   좌표는 그림 속 말풍선·입력판·단추 자리를 백분율로 잰 값이다. */
 .stage {
   position: relative;
+  width: 100%;
+  max-width: 560px;
+  margin: 0 auto;
+  aspect-ratio: 1214 / 1295;
   border-radius: 6px;
   overflow: hidden;
-  aspect-ratio: 4 / 3.3;
-  max-width: 100%;
-  background: var(--night-2);
+  background: var(--night-2) url("assets/bg.webp") center / 100% 100% no-repeat;
+  container-type: inline-size;
   isolation: isolate;
 }
-.stage > svg.screen { position: absolute; inset: 0; width: 100%; height: 100%; z-index: -1; }
-.statue {
-  position: absolute;
-  left: 50%;
-  bottom: 0;
-  width: 46%;
-  transform: translateX(-50%);
-  transform-origin: 50% 100%;
-}
-.statue.talk { animation: nod 0.5s ease-in-out 2; }
-@keyframes nod { 50% { transform: translateX(-50%) translateY(-1.5%); } }
-
 .bubble {
   position: absolute;
-  left: 50%;
-  top: 4%;
-  transform: translateX(-50%);
-  width: min(84%, 420px);
-  background: var(--paper);
+  left: 21%;
+  top: 10.2%;
+  width: 59.3%;
+  height: 11.2%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   color: var(--paper-ink);
-  border-radius: 18px;
-  padding: 10px 16px 12px;
   text-align: center;
-  box-shadow: 0 6px 0 rgba(0, 0, 0, 0.25);
+  padding: 0 4%;
 }
-.bubble::after {
-  content: "";
-  position: absolute;
-  left: 50%;
-  bottom: -14px;
-  border: 14px solid transparent;
-  border-bottom: 0;
-  border-top-color: var(--paper);
-  transform: translateX(-50%);
-}
+.bubble.pop { animation: pop 0.35s ease-out; }
+@keyframes pop { 0% { transform: scale(0.96); opacity: 0.6; } 100% { transform: none; opacity: 1; } }
 .cho {
   font-family: var(--font-display);
-  font-size: clamp(38px, 11vw, 64px);
-  line-height: 1.3;
-  padding-top: 0.08em;
+  font-size: 7cqw;
+  line-height: 1.1;
   letter-spacing: 0.25em;
   margin-right: -0.25em;
 }
 .say {
-  min-height: 1.5em;
-  font-size: clamp(14px, 3.6vw, 17px);
+  font-size: 3.3cqw;
+  line-height: 1.3;
+  max-width: 100%;
+  overflow-wrap: anywhere;
 }
-.say strong { font-family: var(--font-display); font-weight: 400; font-size: 1.35em; }
+.say strong { font-family: var(--font-display); font-weight: 400; font-size: 1.3em; }
+
+/* 그(?) */
+.geu {
+  position: absolute;
+  right: 2%;
+  bottom: 17%;
+  height: 24%;
+  aspect-ratio: 260 / 230;
+  background: url("assets/geu.webp") 0 0 / 900% 300% no-repeat;
+  pointer-events: none;
+}
 .turn-tag {
   position: absolute;
-  right: 10px;
-  bottom: 10px;
-  font-size: 12px;
-  padding: 3px 10px;
+  right: 3%;
+  top: 56%;
+  font-size: max(11px, 2.6cqw);
+  padding: 0.2em 0.8em;
   border-radius: 999px;
-  background: rgba(19, 26, 54, 0.75);
+  background: rgba(19, 26, 54, 0.8);
   border: 1px solid var(--line);
+  white-space: nowrap;
 }
 .turn-tag.me { border-color: var(--gold-hi); color: var(--gold-hi); }
 
-/* 타이머 */
+/* 타이머: 입력판 바로 위 */
 .timer {
-  height: 8px;
+  position: absolute;
+  left: 3.3%;
+  top: 82.2%;
+  width: 76.4%;
+  height: 1.1%;
   border-radius: 4px;
-  background: var(--line);
+  background: rgba(242, 238, 227, 0.18);
   overflow: hidden;
 }
 .timer i {
@@ -187,24 +189,38 @@ h1 .q { color: var(--gold-hi); }
 }
 .timer.hurry i { background: var(--sun); }
 
-form.answer {
-  display: flex;
-  gap: 8px;
-}
+form.answer { position: absolute; inset: 0; pointer-events: none; }
+form.answer input, form.answer button { pointer-events: auto; position: absolute; }
 form.answer input {
-  flex: 1;
-  min-width: 0;
+  left: 4.4%;
+  top: 85.2%;
+  width: 74.2%;
+  height: 7.4%;
   font: inherit;
   font-family: var(--font-display);
-  font-size: 24px;
-  padding: 8px 14px;
-  border-radius: 6px;
-  border: 1px solid var(--line);
-  background: var(--night-2);
+  font-size: max(18px, 5.4cqw);
+  padding: 0 4%;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
   color: var(--ink);
 }
-form.answer input:focus-visible { outline: 2px solid var(--gold-hi); outline-offset: 1px; }
-form.answer input:disabled { opacity: 0.5; }
+form.answer input::placeholder { color: rgba(242, 238, 227, 0.4); }
+form.answer input:focus-visible { outline: 2px solid var(--gold-hi); outline-offset: 0; }
+form.answer input:disabled { opacity: 0.55; }
+form.answer button {
+  left: 81.1%;
+  top: 84.6%;
+  width: 15.5%;
+  height: 9.1%;
+  padding: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: transparent;
+}
+form.answer button:hover:not(:disabled) { background: rgba(255, 240, 190, 0.18); }
+form.answer button:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+form.answer button:disabled { background: rgba(19, 26, 54, 0.45); cursor: default; }
 button {
   font: inherit;
   cursor: pointer;
@@ -217,7 +233,6 @@ button {
 }
 button:hover { background: var(--gold-hi); }
 button:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
-button:disabled { opacity: 0.45; cursor: default; }
 .shake { animation: shake 0.35s; }
 @keyframes shake { 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
 .msg { min-height: 1.5em; font-size: 14px; color: var(--muted); }
@@ -257,18 +272,14 @@ footer a { color: inherit; }
   text-align: center;
   background: rgba(19, 26, 54, 0.86);
 }
-.overlay h2 { margin: 0; font-family: var(--font-display); font-weight: 400; font-size: clamp(26px, 7vw, 38px); }
+.overlay h2 { margin: 0; font-family: var(--font-display); font-weight: 400; font-size: clamp(24px, 7cqw, 38px); }
 .overlay p { margin: 0; max-width: 34em; color: var(--muted); text-wrap: balance; }
 .overlay .quote { font-family: var(--font-display); color: var(--ink); font-size: 16px; }
 .overlay .quote cite { display: block; font-style: normal; font-family: var(--font-body); font-size: 12px; color: var(--muted); margin-top: 2px; }
 .rules { font-size: 13px; }
 
 @media (prefers-reduced-motion: reduce) {
-  .statue.talk, .shake { animation: none; }
-}
-@media (min-width: 640px) {
-  .stage { aspect-ratio: 16 / 10; }
-  .statue { width: 34%; }
+  .bubble.pop, .shake { animation: none; }
 }
 @media (max-width: 420px) {
   .hud .v { font-size: 18px; }
@@ -291,73 +302,19 @@ footer a { color: inherit; }
   </div>
 
   <div class="stage" id="stage">
-    <!-- 일월오봉도: 오른쪽 붉은 해, 왼쪽 흰 달, 다섯 봉우리 -->
-    <svg class="screen" viewBox="0 0 400 330" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
-      <rect width="400" height="330" fill="var(--night-2)"/>
-      <circle cx="62" cy="70" r="24" fill="var(--moon)"/>
-      <circle cx="338" cy="70" r="24" fill="var(--sun)"/>
-      <path d="M0 250 L40 170 L80 230 L130 120 L170 210 L200 70 L230 210 L270 120 L320 230 L360 170 L400 250 L400 330 L0 330 Z" fill="var(--peak)"/>
-      <path d="M0 250 L40 170 L60 210 L30 250 Z M130 120 L150 165 L120 200 Z M200 70 L215 140 L190 160 Z M270 120 L285 170 L258 175 Z M360 170 L380 210 L350 220 Z" fill="var(--peak-2)" opacity="0.7"/>
-      <path d="M0 290 Q50 270 100 290 T200 290 T300 290 T400 290 L400 330 L0 330 Z" fill="var(--night)" opacity="0.55"/>
-    </svg>
-
-    <!-- 세종대왕 동상(광화문광장 좌상을 본뜬 그림) -->
-    <svg class="statue" id="statue" viewBox="0 0 300 330" role="img" aria-label="세종대왕 동상">
-      <defs>
-        <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stop-color="var(--gold-hi)"/>
-          <stop offset="0.55" stop-color="var(--gold)"/>
-          <stop offset="1" stop-color="var(--gold-lo)"/>
-        </linearGradient>
-        <linearGradient id="stone" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stop-color="#8d8f9c"/>
-          <stop offset="1" stop-color="#5d6070"/>
-        </linearGradient>
-      </defs>
-      <!-- 좌대 -->
-      <rect x="30" y="268" width="240" height="62" fill="url(#stone)"/>
-      <rect x="20" y="258" width="260" height="14" fill="#9fa1ad"/>
-      <text x="150" y="309" text-anchor="middle" font-family="var(--font-display)" font-size="22" fill="#2a2d3a" letter-spacing="6">세종대왕</text>
-      <!-- 어좌 등받이 -->
-      <path d="M62 120 Q62 92 92 92 L208 92 Q238 92 238 120 L238 258 L62 258 Z" fill="var(--gold-lo)"/>
-      <path d="M74 126 Q74 104 96 104 L204 104 Q226 104 226 126 L226 258 L74 258 Z" fill="url(#g)" opacity="0.55"/>
-      <!-- 몸(곤룡포) -->
-      <path d="M150 128 C112 128 92 146 86 176 L72 256 L228 256 L214 176 C208 146 188 128 150 128 Z" fill="url(#g)"/>
-      <!-- 옷깃 -->
-      <path d="M128 132 L150 172 L172 132" fill="none" stroke="var(--gold-lo)" stroke-width="4"/>
-      <!-- 흉배(보) -->
-      <circle cx="150" cy="190" r="17" fill="none" stroke="var(--gold-lo)" stroke-width="3"/>
-      <path d="M140 192 q5 -10 10 0 t10 0" fill="none" stroke="var(--gold-lo)" stroke-width="2.5"/>
-      <!-- 옥대 -->
-      <path d="M96 214 Q150 228 204 214" fill="none" stroke="var(--gold-lo)" stroke-width="5"/>
-      <!-- 소매·무릎 -->
-      <path d="M86 176 C70 196 72 226 96 236 L132 236 L124 214 C112 210 104 196 106 180 Z" fill="url(#g)" stroke="var(--gold-lo)" stroke-width="2"/>
-      <path d="M214 176 C230 196 228 226 204 236 L168 236 L176 214 C188 210 196 196 194 180 Z" fill="url(#g)" stroke="var(--gold-lo)" stroke-width="2"/>
-      <!-- 펼친 책 -->
-      <path d="M112 226 L150 218 L150 244 L112 252 Z" fill="var(--gold-hi)" stroke="var(--gold-lo)" stroke-width="2"/>
-      <path d="M188 226 L150 218 L150 244 L188 252 Z" fill="var(--gold-hi)" stroke="var(--gold-lo)" stroke-width="2"/>
-      <path d="M120 232 L142 227 M120 239 L142 234 M158 227 L180 232 M158 234 L180 239" stroke="var(--gold-lo)" stroke-width="1.5"/>
-      <!-- 오른손(들어 올린 손) -->
-      <ellipse cx="206" cy="186" rx="9" ry="11" fill="var(--gold-hi)" stroke="var(--gold-lo)" stroke-width="2"/>
-      <!-- 얼굴 -->
-      <ellipse cx="150" cy="96" rx="26" ry="31" fill="url(#g)"/>
-      <path d="M138 92 q4 -3 8 0 M154 92 q4 -3 8 0" fill="none" stroke="var(--gold-lo)" stroke-width="2.5" stroke-linecap="round"/>
-      <path d="M148 98 q2 6 4 0" fill="none" stroke="var(--gold-lo)" stroke-width="2"/>
-      <!-- 수염 -->
-      <path d="M140 110 q10 6 20 0" fill="none" stroke="var(--gold-lo)" stroke-width="3" stroke-linecap="round"/>
-      <path d="M144 116 Q150 140 156 116" fill="var(--gold-lo)"/>
-      <!-- 익선관 -->
-      <path d="M122 74 Q122 46 150 46 Q178 46 178 74 Z" fill="var(--gold-lo)"/>
-      <rect x="120" y="70" width="60" height="10" rx="3" fill="var(--gold-lo)"/>
-      <ellipse cx="114" cy="54" rx="9" ry="15" transform="rotate(-25 114 54)" fill="var(--gold-lo)"/>
-      <ellipse cx="186" cy="54" rx="9" ry="15" transform="rotate(25 186 54)" fill="var(--gold-lo)"/>
-    </svg>
-
     <div class="bubble" id="bubble">
       <div class="cho" id="cho">ㅅㅈ</div>
-      <div class="say" id="say">짐과 함께 낱말을 대어 보겠느냐</div>
+      <div class="say" id="say">짐과 낱말을 겨뤄 보겠느냐</div>
     </div>
+
+    <div class="geu" id="geu" role="img" aria-label="그(?)"></div>
     <span class="turn-tag" id="turnTag">대기</span>
+
+    <div class="timer" id="timer" aria-hidden="true"><i id="timerBar"></i></div>
+    <form class="answer" id="form" autocomplete="off">
+      <input id="answer" name="answer" maxlength="4" placeholder="두 글자 낱말" lang="ko" aria-label="두 글자 낱말" disabled>
+      <button type="submit" id="submit" aria-label="대답" disabled>대답</button>
+    </form>
 
     <div class="overlay" id="overlay">
       <h2 id="ovTitle">그(?)와 함께 세종대왕</h2>
@@ -367,12 +324,6 @@ footer a { color: inherit; }
     </div>
   </div>
 
-  <div class="timer" id="timer" aria-hidden="true"><i id="timerBar"></i></div>
-
-  <form class="answer" id="form" autocomplete="off">
-    <input id="answer" name="answer" maxlength="4" placeholder="두 글자 낱말" lang="ko" aria-label="두 글자 낱말" disabled>
-    <button type="submit" id="submit" disabled>대답</button>
-  </form>
   <div class="msg" id="msg" role="status"></div>
 
   <p class="log-head">이번 판에 나온 낱말</p>
@@ -398,7 +349,7 @@ footer a { color: inherit; }
   const $ = (id) => document.getElementById(id);
   const el = {
     mode: $("mode"), hearts: $("hearts"), round: $("round"), turn: $("turn"), score: $("score"),
-    statue: $("statue"), cho: $("cho"), say: $("say"), turnTag: $("turnTag"),
+    geu: $("geu"), bubble: $("bubble"), cho: $("cho"), say: $("say"), turnTag: $("turnTag"),
     overlay: $("overlay"), ovTitle: $("ovTitle"), ovQuote: $("ovQuote"), ovText: $("ovText"), ovBtn: $("ovBtn"),
     timer: $("timer"), bar: $("timerBar"), form: $("form"), input: $("answer"), submit: $("submit"),
     msg: $("msg"), log: $("log"), poolSize: $("poolSize"),
@@ -476,10 +427,35 @@ footer a { color: inherit; }
   }
   function speak(html) {
     el.say.innerHTML = html;
-    el.statue.classList.remove("talk");
-    void el.statue.getBoundingClientRect();
-    el.statue.classList.add("talk");
+    el.bubble.classList.remove("pop");
+    void el.bubble.offsetWidth;
+    el.bubble.classList.add("pop");
   }
+  // ---- 그(?) 스프라이트: 9칸 × 3줄(대기·만세·속상) ----
+  const SPRITE = {
+    idle: { row: 0, n: 9, fps: 6, loop: true },
+    win: { row: 1, n: 9, fps: 11 },
+    lose: { row: 2, n: 8, fps: 7 },
+  };
+  const geu = { timer: null };
+  function act(name, opts = {}) {
+    const a = SPRITE[name];
+    const loop = opts.loop ?? a.loop;
+    clearInterval(geu.timer);
+    let k = 0;
+    const draw = () => { el.geu.style.backgroundPosition = `${(k / 8) * 100}% ${a.row * 50}%`; };
+    draw();
+    geu.timer = setInterval(() => {
+      k += 1;
+      if (k >= a.n) {
+        if (loop) k = 0;
+        else if (opts.hold) { clearInterval(geu.timer); return; }
+        else return act("idle");
+      }
+      draw();
+    }, 1000 / a.fps);
+  }
+
   function setMsg(text, kind = "") { el.msg.textContent = text; el.msg.className = "msg " + kind; }
   function setTag(text, me) { el.turnTag.textContent = text; el.turnTag.classList.toggle("me", !!me); }
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -526,8 +502,9 @@ footer a { color: inherit; }
     S.t = 0;
     el.log.innerHTML = "";
     el.overlay.hidden = true;
+    act("idle");
     el.cho.textContent = S.pair;
-    speak(`이번 초성은 <strong>${S.pair}</strong>이니라. 짐이 먼저 대겠노라`);
+    speak(`초성은 <strong>${S.pair}</strong>, 짐이 먼저 대겠노라`);
     renderHud();
     setMsg("");
     setTimeout(step, 1300);
@@ -545,7 +522,7 @@ footer a { color: inherit; }
     S.t += 1;
     if (!left.length) {
       S.score += 20;
-      speak("허허, 짐의 말문이 막혔도다. 네가 한 수 위로구나");
+      speak("허허, 짐의 말문이 막혔도다");
       setMsg("대왕이 낱말을 찾지 못했다. 보너스 20점", "good");
     } else {
       const w = pick(left);
@@ -594,8 +571,9 @@ footer a { color: inherit; }
     S.t += 1;
     renderHud();
     const hint = POOL.get(S.pair).find((w) => !S.used.has(w));
-    speak(hint ? `시간이 다 되었구나. <strong>${hint}</strong> 같은 낱말이 있느니라` : "시간이 다 되었구나");
+    speak(hint ? `시간이 다 됐느니라. <strong>${hint}</strong>도 있거늘` : "시간이 다 됐느니라");
     setMsg("10초가 지났다. 목숨 하나를 잃었다", "bad");
+    act("lose", { hold: S.hearts <= 0 });
     el.form.classList.remove("shake"); void el.form.offsetWidth; el.form.classList.add("shake");
     if (S.hearts <= 0) { await sleep(1400); return gameOver(); }
     await sleep(1600);
@@ -636,6 +614,7 @@ footer a { color: inherit; }
     addLog("나", word, res.senses);
     setMsg(`맞았다! +${10 + secs}점` + (res.note ? ` (사전 연결이 끊겨 내장 목록으로 판정)` : ""), "good");
     speak(pick(["옳거니!", "훌륭하도다", "제법이로구나", "그 낱말도 알더냐"]));
+    act("win");
     renderHud();
     await sleep(900);
     step();
@@ -646,6 +625,7 @@ footer a { color: inherit; }
     setTag("판 끝");
     S.score += 30;
     renderHud();
+    act("win", { loop: true });
     showOverlay(`${S.round}판을 넘겼다`, pick(QUOTES), `열 차례를 모두 마쳐 보너스 30점. 지금 ${S.score}점이다. 다음 판에서는 새 초성이 나온다.`, "다음 판");
   }
   function gameOver() {
@@ -654,7 +634,7 @@ footer a { color: inherit; }
     setTag("게임 오버");
     const record = S.score > S.best;
     if (record) { S.best = S.score; try { localStorage.setItem("sejong-best", String(S.best)); } catch (_) {} }
-    speak("열흘이면 배운다 하였거늘… 다시 겨뤄 보자꾸나");
+    speak("열흘이면 배운다 하였거늘…");
     showOverlay("게임 오버", QUOTES[3], `${S.round}판에서 목숨 셋을 모두 잃었다. 점수 ${S.score}점${record ? " (최고 기록)" : ` · 최고 ${S.best}점`}.`, "다시 하기");
   }
 
@@ -664,6 +644,7 @@ footer a { color: inherit; }
   });
 
   detectApi();
+  act("idle");
   el.cho.textContent = PAIRS.length ? pick(PAIRS) : "ㅅㅈ";
 })();
 </script>
