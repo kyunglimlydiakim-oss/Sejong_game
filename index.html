@@ -7,7 +7,7 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Song+Myung&family=Gowun+Dodum&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Song+Myung&family=Gowun+Dodum&family=Gowun+Batang:wght@700&display=swap">
 <style>
 /* 레이아웃: 일월오봉도 병풍을 배경으로 가운데 세종대왕 동상, 위에 말풍선, 아래에 답안 칸.
    한 화면 게임. 색은 병풍의 감청 밤하늘·붉은 해·흰 달·청록 봉우리·동상의 금빛에서 가져왔다. */
@@ -118,9 +118,9 @@ h1 .q { color: var(--gold-hi); }
 .bubble {
   position: absolute;
   left: 21%;
-  top: 10.2%;
+  top: 11.4%;
   width: 59.3%;
-  height: 11.2%;
+  height: 9.8%;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -132,15 +132,16 @@ h1 .q { color: var(--gold-hi); }
 .bubble.pop { animation: pop 0.35s ease-out; }
 @keyframes pop { 0% { transform: scale(0.96); opacity: 0.6; } 100% { transform: none; opacity: 1; } }
 .cho {
-  font-family: var(--font-display);
-  font-size: 7cqw;
-  line-height: 1.1;
+  font-family: "Gowun Batang", var(--font-display);
+  font-weight: 700;
+  font-size: 7.6cqw;
+  line-height: 1.05;
   letter-spacing: 0.25em;
   margin-right: -0.25em;
 }
 .say {
-  font-size: 3.3cqw;
-  line-height: 1.3;
+  font-size: max(11px, 2.9cqw);
+  line-height: 1.25;
   max-width: 100%;
   overflow-wrap: anywhere;
 }
@@ -156,10 +157,35 @@ h1 .q { color: var(--gold-hi); }
   background: url("assets/geu.webp") 0 0 / 900% 300% no-repeat;
   pointer-events: none;
 }
-.turn-tag {
+.geu-say {
   position: absolute;
   right: 3%;
-  top: 56%;
+  bottom: 41.5%;
+  max-width: 44%;
+  padding: 0.45em 0.9em;
+  border-radius: 14px;
+  background: var(--paper);
+  color: var(--paper-ink);
+  font-size: max(12px, 3.2cqw);
+  line-height: 1.3;
+  text-align: center;
+  box-shadow: 0 3px 0 rgba(0, 0, 0, 0.25);
+}
+.geu-say::after {
+  content: "";
+  position: absolute;
+  right: 22%;
+  bottom: -9px;
+  border: 9px solid transparent;
+  border-bottom: 0;
+  border-top-color: var(--paper);
+}
+.geu-say strong { font-family: var(--font-display); font-weight: 400; font-size: 1.35em; }
+.geu-say.pop { animation: pop 0.3s ease-out; }
+.turn-tag {
+  position: absolute;
+  left: 4%;
+  top: 76.5%;
   font-size: max(11px, 2.6cqw);
   padding: 0.2em 0.8em;
   border-radius: 999px;
@@ -250,6 +276,7 @@ button:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
 }
 .log .who { font-size: 12px; color: var(--muted); }
 .log .who.me { color: var(--gold-hi); }
+.hud .vs { font-size: 0.7em; color: var(--muted); }
 .log .w { font-family: var(--font-display); font-size: 20px; }
 .log .def { font-size: 13px; color: var(--muted); min-width: 0; overflow-wrap: anywhere; }
 .log .def a { color: inherit; }
@@ -279,7 +306,7 @@ footer a { color: inherit; }
 .rules { font-size: 13px; }
 
 @media (prefers-reduced-motion: reduce) {
-  .bubble.pop, .shake { animation: none; }
+  .bubble.pop, .geu-say.pop, .shake { animation: none; }
 }
 @media (max-width: 420px) {
   .hud .v { font-size: 18px; }
@@ -295,19 +322,20 @@ footer a { color: inherit; }
   </header>
 
   <div class="hud" aria-live="polite">
-    <div><span class="k">목숨</span><span class="v hearts" id="hearts">♥♥♥</span></div>
+    <div><span class="k">내 목숨</span><span class="v hearts" id="hearts">♥♥♥</span></div>
     <div><span class="k">판</span><span class="v" id="round">1</span></div>
     <div><span class="k">차례</span><span class="v" id="turn">0/10</span></div>
-    <div><span class="k">점수</span><span class="v" id="score">0</span></div>
+    <div><span class="k">점수 나 : 그(?)</span><span class="v" id="score">0 : 0</span></div>
   </div>
 
   <div class="stage" id="stage">
     <div class="bubble" id="bubble">
       <div class="cho" id="cho">ㅅㅈ</div>
-      <div class="say" id="say">짐과 낱말을 겨뤄 보겠느냐</div>
+      <div class="say" id="say">초성을 내리노라</div>
     </div>
 
-    <div class="geu" id="geu" role="img" aria-label="그(?)"></div>
+    <div class="geu" id="geu" role="img" aria-label="나와 겨루는 그(?)"></div>
+    <div class="geu-say" id="geuSay" hidden></div>
     <span class="turn-tag" id="turnTag">대기</span>
 
     <div class="timer" id="timer" aria-hidden="true"><i id="timerBar"></i></div>
@@ -319,7 +347,7 @@ footer a { color: inherit; }
     <div class="overlay" id="overlay">
       <h2 id="ovTitle">그(?)와 함께 세종대왕</h2>
       <p class="quote" id="ovQuote">사람마다 쉽게 익혀 날마다 씀에 편하게 하고자 할 따름이니라<cite>『훈민정음』 어제 서문(1446)</cite></p>
-      <p class="rules" id="ovText">세종대왕이 초성 두 개를 내면 대왕이 먼저, 그다음 내가 번갈아 두 글자 낱말을 댄다. 내 차례에 10초 안에 못 대면 목숨이 하나 줄고, 셋을 다 잃으면 끝난다. 열 차례를 넘기면 다음 판으로 간다.</p>
+      <p class="rules" id="ovText">세종대왕이 초성 두 개를 내리면 그(?)가 먼저, 그다음 내가 번갈아 두 글자 낱말을 댄다. 내 차례에 10초 안에 못 대면 목숨이 하나 줄고, 셋을 다 잃으면 끝난다. 열 차례를 넘기면 다음 판으로 간다.</p>
       <button type="button" id="ovBtn">시작하기</button>
     </div>
   </div>
@@ -331,7 +359,7 @@ footer a { color: inherit; }
 
   <footer>
     판정: 국립국어원 <a href="https://stdict.korean.go.kr/" target="_blank" rel="noopener">표준국어대사전</a> 오픈 API(두 음절 어휘 표제어 일치 검색).
-    대왕의 낱말과 오프라인 판정: 국립국어원 「한국어 학습용 어휘 목록」(2003) 중 두 글자 단어 <span id="poolSize">0</span>개, 공공누리 제1유형.
+    그(?)의 낱말과 오프라인 판정: 국립국어원 「한국어 학습용 어휘 목록」(2003) 중 두 글자 단어 <span id="poolSize">0</span>개, 공공누리 제1유형.
   </footer>
 </div>
 
@@ -340,7 +368,7 @@ footer a { color: inherit; }
 (() => {
   "use strict";
   const CHO = "ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎ";
-  const TURNS = 10;          // 한 판의 차례 수(대왕 5, 나 5)
+  const TURNS = 10;          // 한 판의 차례 수(그 5, 나 5)
   const LIMIT = 10000;       // 내 차례 제한 시간(ms)
   const MIN_POOL = 12;       // 이만큼 낱말이 있는 초성 쌍만 낸다
   const WORDS = window.SEJONG_WORDS || [];
@@ -349,7 +377,7 @@ footer a { color: inherit; }
   const $ = (id) => document.getElementById(id);
   const el = {
     mode: $("mode"), hearts: $("hearts"), round: $("round"), turn: $("turn"), score: $("score"),
-    geu: $("geu"), bubble: $("bubble"), cho: $("cho"), say: $("say"), turnTag: $("turnTag"),
+    geu: $("geu"), geuSay: $("geuSay"), bubble: $("bubble"), cho: $("cho"), say: $("say"), turnTag: $("turnTag"),
     overlay: $("overlay"), ovTitle: $("ovTitle"), ovQuote: $("ovQuote"), ovText: $("ovText"), ovBtn: $("ovBtn"),
     timer: $("timer"), bar: $("timerBar"), form: $("form"), input: $("answer"), submit: $("submit"),
     msg: $("msg"), log: $("log"), poolSize: $("poolSize"),
@@ -416,20 +444,23 @@ footer a { color: inherit; }
   }
 
   // ---- 상태 ----
-  const S = { hearts: 3, round: 0, score: 0, pair: "", used: new Set(), t: 0, timer: null, deadline: 0, paused: 0, busy: false, best: 0, usedPairs: new Set() };
+  const S = { hearts: 3, round: 0, score: 0, rival: 0, pair: "", used: new Set(), t: 0, timer: null, deadline: 0, paused: 0, busy: false, best: 0, usedPairs: new Set() };
   try { S.best = Number(localStorage.getItem("sejong-best")) || 0; } catch (_) {}
 
   function renderHud() {
     el.hearts.innerHTML = "♥".repeat(S.hearts) + `<span class="lost">${"♥".repeat(3 - S.hearts)}</span>`;
     el.round.textContent = S.round;
     el.turn.textContent = `${Math.min(S.t, TURNS)}/${TURNS}`;
-    el.score.textContent = S.score;
+    el.score.innerHTML = `${S.score}<span class="vs"> : </span>${S.rival}`;
   }
-  function speak(html) {
-    el.say.innerHTML = html;
-    el.bubble.classList.remove("pop");
-    void el.bubble.offsetWidth;
-    el.bubble.classList.add("pop");
+  const popIn = (node) => { node.classList.remove("pop"); void node.offsetWidth; node.classList.add("pop"); };
+  // 세종대왕은 초성만 내린다
+  function announce(html) { el.say.innerHTML = html; popIn(el.bubble); }
+  // 그(?)의 말
+  function taunt(html) {
+    el.geuSay.hidden = !html;
+    el.geuSay.innerHTML = html || "";
+    if (html) popIn(el.geuSay);
   }
   // ---- 그(?) 스프라이트: 9칸 × 3줄(대기·만세·속상) ----
   const SPRITE = {
@@ -489,7 +520,7 @@ footer a { color: inherit; }
 
   // ---- 진행 ----
   function newGame() {
-    Object.assign(S, { hearts: 3, round: 0, score: 0, usedPairs: new Set() });
+    Object.assign(S, { hearts: 3, round: 0, score: 0, rival: 0, usedPairs: new Set() });
     nextRound();
   }
   function nextRound() {
@@ -504,34 +535,40 @@ footer a { color: inherit; }
     el.overlay.hidden = true;
     act("idle");
     el.cho.textContent = S.pair;
-    speak(`초성은 <strong>${S.pair}</strong>, 짐이 먼저 대겠노라`);
+    announce(`제${S.round}판 초성을 내리노라`);
+    taunt(S.round === 1 ? "내가 먼저 간다" : "이번엔 안 봐줘");
     renderHud();
     setMsg("");
     setTimeout(step, 1300);
   }
   function step() {
     if (S.t >= TURNS) return roundClear();
-    S.t % 2 === 0 ? sejongTurn() : myTurn();
+    S.t % 2 === 0 ? rivalTurn() : myTurn();
   }
-  async function sejongTurn() {
-    setTag("대왕의 차례");
+  // 그(?)도 가끔 막힌다. 판이 갈수록 조금씩 자주 막힌다.
+  const stumpChance = () => Math.min(0.04 + 0.03 * (S.round - 1), 0.25);
+  async function rivalTurn() {
+    setTag("그(?)의 차례");
     lockInput(true);
-    speak("음…");
-    await sleep(900 + Math.random() * 700);
+    taunt("음…");
+    const think = 900 + Math.random() * 1600;
+    await sleep(think);
     const left = POOL.get(S.pair).filter((w) => !S.used.has(w));
     S.t += 1;
-    if (!left.length) {
+    if (!left.length || Math.random() < stumpChance()) {
       S.score += 20;
-      speak("허허, 짐의 말문이 막혔도다");
-      setMsg("대왕이 낱말을 찾지 못했다. 보너스 20점", "good");
+      taunt("아… 생각이 안 나");
+      act("lose");
+      setMsg("그(?)가 막혔다. 보너스 20점", "good");
     } else {
       const w = pick(left);
       S.used.add(w);
-      speak(`<strong>${w}</strong>! 이제 네 차례니라`);
-      addLog("대왕", w);
+      S.rival += 10 + Math.ceil((LIMIT - think) / 1000);
+      taunt(`<strong>${w}</strong>! 네 차례야`);
+      addLog("그(?)", w);
     }
     renderHud();
-    await sleep(1100);
+    await sleep(1200);
     step();
   }
   function myTurn() {
@@ -571,9 +608,9 @@ footer a { color: inherit; }
     S.t += 1;
     renderHud();
     const hint = POOL.get(S.pair).find((w) => !S.used.has(w));
-    speak(hint ? `시간이 다 됐느니라. <strong>${hint}</strong>도 있거늘` : "시간이 다 됐느니라");
+    taunt(hint ? `땡! <strong>${hint}</strong>도 몰라?` : "땡! 시간 끝");
     setMsg("10초가 지났다. 목숨 하나를 잃었다", "bad");
-    act("lose", { hold: S.hearts <= 0 });
+    act("win", { loop: S.hearts <= 0 });
     el.form.classList.remove("shake"); void el.form.offsetWidth; el.form.classList.add("shake");
     if (S.hearts <= 0) { await sleep(1400); return gameOver(); }
     await sleep(1600);
@@ -613,8 +650,7 @@ footer a { color: inherit; }
     S.t += 1;
     addLog("나", word, res.senses);
     setMsg(`맞았다! +${10 + secs}점` + (res.note ? ` (사전 연결이 끊겨 내장 목록으로 판정)` : ""), "good");
-    speak(pick(["옳거니!", "훌륭하도다", "제법이로구나", "그 낱말도 알더냐"]));
-    act("win");
+    taunt(pick(["흥, 제법인데?", "그 정도는 나도 알아", "운이 좋았네", "오, 좀 하는데"]));
     renderHud();
     await sleep(900);
     step();
@@ -625,8 +661,9 @@ footer a { color: inherit; }
     setTag("판 끝");
     S.score += 30;
     renderHud();
-    act("win", { loop: true });
-    showOverlay(`${S.round}판을 넘겼다`, pick(QUOTES), `열 차례를 모두 마쳐 보너스 30점. 지금 ${S.score}점이다. 다음 판에서는 새 초성이 나온다.`, "다음 판");
+    act("lose", { hold: true });
+    taunt("이번 판은 내가 졌다…");
+    showOverlay(`${S.round}판 승리`, pick(QUOTES), `열 차례를 버텨 냈다. 보너스 30점. 나 ${S.score}점, 그(?) ${S.rival}점. 다음 판에서는 새 초성이 나온다.`, "다음 판");
   }
   function gameOver() {
     stopTimer();
@@ -634,8 +671,8 @@ footer a { color: inherit; }
     setTag("게임 오버");
     const record = S.score > S.best;
     if (record) { S.best = S.score; try { localStorage.setItem("sejong-best", String(S.best)); } catch (_) {} }
-    speak("열흘이면 배운다 하였거늘…");
-    showOverlay("게임 오버", QUOTES[3], `${S.round}판에서 목숨 셋을 모두 잃었다. 점수 ${S.score}점${record ? " (최고 기록)" : ` · 최고 ${S.best}점`}.`, "다시 하기");
+    taunt("내가 이겼다!");
+    showOverlay("그(?)의 승리", QUOTES[3], `${S.round}판에서 목숨 셋을 모두 잃었다. 나 ${S.score}점, 그(?) ${S.rival}점${record ? ". 내 최고 기록이다" : `. 내 최고 기록은 ${S.best}점`}.`, "다시 하기");
   }
 
   el.ovBtn.addEventListener("click", () => {
