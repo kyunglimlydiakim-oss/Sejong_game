@@ -1,0 +1,671 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>그(?)와 함께 세종대왕</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Song+Myung&family=Gowun+Dodum&display=swap">
+<style>
+/* 레이아웃: 일월오봉도 병풍을 배경으로 가운데 세종대왕 동상, 위에 말풍선, 아래에 답안 칸.
+   한 화면 게임. 색은 병풍의 감청 밤하늘·붉은 해·흰 달·청록 봉우리·동상의 금빛에서 가져왔다. */
+:root {
+  --night: #131a36;
+  --night-2: #1c2750;
+  --peak: #2c6a5c;
+  --peak-2: #3e8b73;
+  --sun: #d6432e;
+  --moon: #efeadb;
+  --gold: #cf9f3c;
+  --gold-hi: #f0d07a;
+  --gold-lo: #8a6420;
+  --ink: #f2eee3;
+  --muted: #a7aec8;
+  --paper: #f5efdf;
+  --paper-ink: #1b2140;
+  --good: #6fcf97;
+  --bad: #ff7a6b;
+  --line: rgba(242, 238, 227, 0.14);
+  --font-display: "Song Myung", "Nanum Myeongjo", "Batang", serif;
+  --font-body: "Gowun Dodum", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  background: var(--night);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.5;
+}
+.app {
+  min-height: 100%;
+  max-width: 760px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-block: 14px 20px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+}
+h1 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(24px, 6vw, 34px);
+  letter-spacing: 0.02em;
+  text-wrap: balance;
+}
+h1 .q { color: var(--gold-hi); }
+.mode {
+  font-size: 12px;
+  color: var(--muted);
+  letter-spacing: 0.04em;
+}
+.mode b { color: var(--gold-hi); font-weight: 400; }
+
+.hud {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+.hud > div {
+  border-top: 1px solid var(--line);
+  padding-top: 6px;
+  min-width: 0;
+}
+.hud .k {
+  display: block;
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 0.08em;
+}
+.hud .v {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-variant-numeric: tabular-nums;
+}
+.hearts { color: var(--sun); letter-spacing: 2px; }
+.hearts .lost { color: rgba(242, 238, 227, 0.18); }
+
+/* 무대 */
+.stage {
+  position: relative;
+  border-radius: 6px;
+  overflow: hidden;
+  aspect-ratio: 4 / 3.3;
+  max-width: 100%;
+  background: var(--night-2);
+  isolation: isolate;
+}
+.stage > svg.screen { position: absolute; inset: 0; width: 100%; height: 100%; z-index: -1; }
+.statue {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 46%;
+  transform: translateX(-50%);
+  transform-origin: 50% 100%;
+}
+.statue.talk { animation: nod 0.5s ease-in-out 2; }
+@keyframes nod { 50% { transform: translateX(-50%) translateY(-1.5%); } }
+
+.bubble {
+  position: absolute;
+  left: 50%;
+  top: 4%;
+  transform: translateX(-50%);
+  width: min(84%, 420px);
+  background: var(--paper);
+  color: var(--paper-ink);
+  border-radius: 18px;
+  padding: 10px 16px 12px;
+  text-align: center;
+  box-shadow: 0 6px 0 rgba(0, 0, 0, 0.25);
+}
+.bubble::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -14px;
+  border: 14px solid transparent;
+  border-bottom: 0;
+  border-top-color: var(--paper);
+  transform: translateX(-50%);
+}
+.cho {
+  font-family: var(--font-display);
+  font-size: clamp(38px, 11vw, 64px);
+  line-height: 1.3;
+  padding-top: 0.08em;
+  letter-spacing: 0.25em;
+  margin-right: -0.25em;
+}
+.say {
+  min-height: 1.5em;
+  font-size: clamp(14px, 3.6vw, 17px);
+}
+.say strong { font-family: var(--font-display); font-weight: 400; font-size: 1.35em; }
+.turn-tag {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  font-size: 12px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: rgba(19, 26, 54, 0.75);
+  border: 1px solid var(--line);
+}
+.turn-tag.me { border-color: var(--gold-hi); color: var(--gold-hi); }
+
+/* 타이머 */
+.timer {
+  height: 8px;
+  border-radius: 4px;
+  background: var(--line);
+  overflow: hidden;
+}
+.timer i {
+  display: block;
+  height: 100%;
+  width: 100%;
+  background: var(--gold-hi);
+  transform-origin: left center;
+}
+.timer.hurry i { background: var(--sun); }
+
+form.answer {
+  display: flex;
+  gap: 8px;
+}
+form.answer input {
+  flex: 1;
+  min-width: 0;
+  font: inherit;
+  font-family: var(--font-display);
+  font-size: 24px;
+  padding: 8px 14px;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+  background: var(--night-2);
+  color: var(--ink);
+}
+form.answer input:focus-visible { outline: 2px solid var(--gold-hi); outline-offset: 1px; }
+form.answer input:disabled { opacity: 0.5; }
+button {
+  font: inherit;
+  cursor: pointer;
+  border-radius: 6px;
+  border: 0;
+  padding: 10px 18px;
+  background: var(--gold);
+  color: var(--paper-ink);
+  font-weight: 700;
+}
+button:hover { background: var(--gold-hi); }
+button:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+button:disabled { opacity: 0.45; cursor: default; }
+.shake { animation: shake 0.35s; }
+@keyframes shake { 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+.msg { min-height: 1.5em; font-size: 14px; color: var(--muted); }
+.msg.good { color: var(--good); }
+.msg.bad { color: var(--bad); }
+
+.log { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 6px; }
+.log li {
+  display: grid;
+  grid-template-columns: 4.2em 3.6em minmax(0, 1fr);
+  gap: 8px;
+  align-items: baseline;
+  border-top: 1px solid var(--line);
+  padding-top: 6px;
+}
+.log .who { font-size: 12px; color: var(--muted); }
+.log .who.me { color: var(--gold-hi); }
+.log .w { font-family: var(--font-display); font-size: 20px; }
+.log .def { font-size: 13px; color: var(--muted); min-width: 0; overflow-wrap: anywhere; }
+.log .def a { color: inherit; }
+.log-head { font-size: 12px; color: var(--muted); letter-spacing: 0.08em; margin: 4px 0 0; }
+
+footer { font-size: 11px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 8px; }
+footer a { color: inherit; }
+
+/* 시작·판 넘김·게임 오버 */
+.overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 20px;
+  text-align: center;
+  background: rgba(19, 26, 54, 0.86);
+}
+.overlay h2 { margin: 0; font-family: var(--font-display); font-weight: 400; font-size: clamp(26px, 7vw, 38px); }
+.overlay p { margin: 0; max-width: 34em; color: var(--muted); text-wrap: balance; }
+.overlay .quote { font-family: var(--font-display); color: var(--ink); font-size: 16px; }
+.overlay .quote cite { display: block; font-style: normal; font-family: var(--font-body); font-size: 12px; color: var(--muted); margin-top: 2px; }
+.rules { font-size: 13px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .statue.talk, .shake { animation: none; }
+}
+@media (min-width: 640px) {
+  .stage { aspect-ratio: 16 / 10; }
+  .statue { width: 34%; }
+}
+@media (max-width: 420px) {
+  .hud .v { font-size: 18px; }
+  .log li { grid-template-columns: 3.6em 3.2em minmax(0, 1fr); }
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <h1>그<span class="q">(?)</span>와 함께 세종대왕</h1>
+    <span class="mode" id="mode">사전 확인 중…</span>
+  </header>
+
+  <div class="hud" aria-live="polite">
+    <div><span class="k">목숨</span><span class="v hearts" id="hearts">♥♥♥</span></div>
+    <div><span class="k">판</span><span class="v" id="round">1</span></div>
+    <div><span class="k">차례</span><span class="v" id="turn">0/10</span></div>
+    <div><span class="k">점수</span><span class="v" id="score">0</span></div>
+  </div>
+
+  <div class="stage" id="stage">
+    <!-- 일월오봉도: 오른쪽 붉은 해, 왼쪽 흰 달, 다섯 봉우리 -->
+    <svg class="screen" viewBox="0 0 400 330" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+      <rect width="400" height="330" fill="var(--night-2)"/>
+      <circle cx="62" cy="70" r="24" fill="var(--moon)"/>
+      <circle cx="338" cy="70" r="24" fill="var(--sun)"/>
+      <path d="M0 250 L40 170 L80 230 L130 120 L170 210 L200 70 L230 210 L270 120 L320 230 L360 170 L400 250 L400 330 L0 330 Z" fill="var(--peak)"/>
+      <path d="M0 250 L40 170 L60 210 L30 250 Z M130 120 L150 165 L120 200 Z M200 70 L215 140 L190 160 Z M270 120 L285 170 L258 175 Z M360 170 L380 210 L350 220 Z" fill="var(--peak-2)" opacity="0.7"/>
+      <path d="M0 290 Q50 270 100 290 T200 290 T300 290 T400 290 L400 330 L0 330 Z" fill="var(--night)" opacity="0.55"/>
+    </svg>
+
+    <!-- 세종대왕 동상(광화문광장 좌상을 본뜬 그림) -->
+    <svg class="statue" id="statue" viewBox="0 0 300 330" role="img" aria-label="세종대왕 동상">
+      <defs>
+        <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="var(--gold-hi)"/>
+          <stop offset="0.55" stop-color="var(--gold)"/>
+          <stop offset="1" stop-color="var(--gold-lo)"/>
+        </linearGradient>
+        <linearGradient id="stone" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#8d8f9c"/>
+          <stop offset="1" stop-color="#5d6070"/>
+        </linearGradient>
+      </defs>
+      <!-- 좌대 -->
+      <rect x="30" y="268" width="240" height="62" fill="url(#stone)"/>
+      <rect x="20" y="258" width="260" height="14" fill="#9fa1ad"/>
+      <text x="150" y="309" text-anchor="middle" font-family="var(--font-display)" font-size="22" fill="#2a2d3a" letter-spacing="6">세종대왕</text>
+      <!-- 어좌 등받이 -->
+      <path d="M62 120 Q62 92 92 92 L208 92 Q238 92 238 120 L238 258 L62 258 Z" fill="var(--gold-lo)"/>
+      <path d="M74 126 Q74 104 96 104 L204 104 Q226 104 226 126 L226 258 L74 258 Z" fill="url(#g)" opacity="0.55"/>
+      <!-- 몸(곤룡포) -->
+      <path d="M150 128 C112 128 92 146 86 176 L72 256 L228 256 L214 176 C208 146 188 128 150 128 Z" fill="url(#g)"/>
+      <!-- 옷깃 -->
+      <path d="M128 132 L150 172 L172 132" fill="none" stroke="var(--gold-lo)" stroke-width="4"/>
+      <!-- 흉배(보) -->
+      <circle cx="150" cy="190" r="17" fill="none" stroke="var(--gold-lo)" stroke-width="3"/>
+      <path d="M140 192 q5 -10 10 0 t10 0" fill="none" stroke="var(--gold-lo)" stroke-width="2.5"/>
+      <!-- 옥대 -->
+      <path d="M96 214 Q150 228 204 214" fill="none" stroke="var(--gold-lo)" stroke-width="5"/>
+      <!-- 소매·무릎 -->
+      <path d="M86 176 C70 196 72 226 96 236 L132 236 L124 214 C112 210 104 196 106 180 Z" fill="url(#g)" stroke="var(--gold-lo)" stroke-width="2"/>
+      <path d="M214 176 C230 196 228 226 204 236 L168 236 L176 214 C188 210 196 196 194 180 Z" fill="url(#g)" stroke="var(--gold-lo)" stroke-width="2"/>
+      <!-- 펼친 책 -->
+      <path d="M112 226 L150 218 L150 244 L112 252 Z" fill="var(--gold-hi)" stroke="var(--gold-lo)" stroke-width="2"/>
+      <path d="M188 226 L150 218 L150 244 L188 252 Z" fill="var(--gold-hi)" stroke="var(--gold-lo)" stroke-width="2"/>
+      <path d="M120 232 L142 227 M120 239 L142 234 M158 227 L180 232 M158 234 L180 239" stroke="var(--gold-lo)" stroke-width="1.5"/>
+      <!-- 오른손(들어 올린 손) -->
+      <ellipse cx="206" cy="186" rx="9" ry="11" fill="var(--gold-hi)" stroke="var(--gold-lo)" stroke-width="2"/>
+      <!-- 얼굴 -->
+      <ellipse cx="150" cy="96" rx="26" ry="31" fill="url(#g)"/>
+      <path d="M138 92 q4 -3 8 0 M154 92 q4 -3 8 0" fill="none" stroke="var(--gold-lo)" stroke-width="2.5" stroke-linecap="round"/>
+      <path d="M148 98 q2 6 4 0" fill="none" stroke="var(--gold-lo)" stroke-width="2"/>
+      <!-- 수염 -->
+      <path d="M140 110 q10 6 20 0" fill="none" stroke="var(--gold-lo)" stroke-width="3" stroke-linecap="round"/>
+      <path d="M144 116 Q150 140 156 116" fill="var(--gold-lo)"/>
+      <!-- 익선관 -->
+      <path d="M122 74 Q122 46 150 46 Q178 46 178 74 Z" fill="var(--gold-lo)"/>
+      <rect x="120" y="70" width="60" height="10" rx="3" fill="var(--gold-lo)"/>
+      <ellipse cx="114" cy="54" rx="9" ry="15" transform="rotate(-25 114 54)" fill="var(--gold-lo)"/>
+      <ellipse cx="186" cy="54" rx="9" ry="15" transform="rotate(25 186 54)" fill="var(--gold-lo)"/>
+    </svg>
+
+    <div class="bubble" id="bubble">
+      <div class="cho" id="cho">ㅅㅈ</div>
+      <div class="say" id="say">짐과 함께 낱말을 대어 보겠느냐</div>
+    </div>
+    <span class="turn-tag" id="turnTag">대기</span>
+
+    <div class="overlay" id="overlay">
+      <h2 id="ovTitle">그(?)와 함께 세종대왕</h2>
+      <p class="quote" id="ovQuote">사람마다 쉽게 익혀 날마다 씀에 편하게 하고자 할 따름이니라<cite>『훈민정음』 어제 서문(1446)</cite></p>
+      <p class="rules" id="ovText">세종대왕이 초성 두 개를 내면 대왕이 먼저, 그다음 내가 번갈아 두 글자 낱말을 댄다. 내 차례에 10초 안에 못 대면 목숨이 하나 줄고, 셋을 다 잃으면 끝난다. 열 차례를 넘기면 다음 판으로 간다.</p>
+      <button type="button" id="ovBtn">시작하기</button>
+    </div>
+  </div>
+
+  <div class="timer" id="timer" aria-hidden="true"><i id="timerBar"></i></div>
+
+  <form class="answer" id="form" autocomplete="off">
+    <input id="answer" name="answer" maxlength="4" placeholder="두 글자 낱말" lang="ko" aria-label="두 글자 낱말" disabled>
+    <button type="submit" id="submit" disabled>대답</button>
+  </form>
+  <div class="msg" id="msg" role="status"></div>
+
+  <p class="log-head">이번 판에 나온 낱말</p>
+  <ul class="log" id="log"></ul>
+
+  <footer>
+    판정: 국립국어원 <a href="https://stdict.korean.go.kr/" target="_blank" rel="noopener">표준국어대사전</a> 오픈 API(두 음절 어휘 표제어 일치 검색).
+    대왕의 낱말과 오프라인 판정: 국립국어원 「한국어 학습용 어휘 목록」(2003) 중 두 글자 단어 <span id="poolSize">0</span>개, 공공누리 제1유형.
+  </footer>
+</div>
+
+<script src="words.js"></script>
+<script>
+(() => {
+  "use strict";
+  const CHO = "ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎ";
+  const TURNS = 10;          // 한 판의 차례 수(대왕 5, 나 5)
+  const LIMIT = 10000;       // 내 차례 제한 시간(ms)
+  const MIN_POOL = 12;       // 이만큼 낱말이 있는 초성 쌍만 낸다
+  const WORDS = window.SEJONG_WORDS || [];
+  const DICT = new Set(WORDS);
+
+  const $ = (id) => document.getElementById(id);
+  const el = {
+    mode: $("mode"), hearts: $("hearts"), round: $("round"), turn: $("turn"), score: $("score"),
+    statue: $("statue"), cho: $("cho"), say: $("say"), turnTag: $("turnTag"),
+    overlay: $("overlay"), ovTitle: $("ovTitle"), ovQuote: $("ovQuote"), ovText: $("ovText"), ovBtn: $("ovBtn"),
+    timer: $("timer"), bar: $("timerBar"), form: $("form"), input: $("answer"), submit: $("submit"),
+    msg: $("msg"), log: $("log"), poolSize: $("poolSize"),
+  };
+  el.poolSize.textContent = WORDS.length.toLocaleString("ko-KR");
+
+  const choOf = (ch) => {
+    const c = ch.charCodeAt(0) - 0xac00;
+    return c >= 0 && c < 11172 ? CHO[Math.floor(c / 588)] : "";
+  };
+  const pairOf = (w) => choOf(w[0]) + choOf(w[1]);
+  // 받침 유무에 따라 조사를 고른다(은/는, 이/가)
+  const josa = (w, a, b) => {
+    const c = w.charCodeAt(w.length - 1) - 0xac00;
+    return w + (c >= 0 && c < 11172 && c % 28 ? a : b);
+  };
+
+  // 초성 쌍별 낱말 창고
+  const POOL = new Map();
+  for (const w of WORDS) {
+    const p = pairOf(w);
+    if (!POOL.has(p)) POOL.set(p, []);
+    POOL.get(p).push(w);
+  }
+  const PAIRS = [...POOL.keys()].filter((p) => POOL.get(p).length >= MIN_POOL);
+  const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+
+  // 『훈민정음』 어제 서문·정인지 서문을 오늘 말로 옮긴 구절
+  const QUOTES = [
+    ["나라의 말이 중국과 달라 문자와 서로 통하지 아니하니라", "『훈민정음』 어제 서문(1446)"],
+    ["내 이를 딱하게 여겨 새로 스물여덟 글자를 만드노니", "『훈민정음』 어제 서문(1446)"],
+    ["사람마다 쉽게 익혀 날마다 씀에 편하게 하고자 할 따름이니라", "『훈민정음』 어제 서문(1446)"],
+    ["슬기로운 이는 아침나절이 끝나기 전에 깨치고, 어리석은 이도 열흘이면 배울 수 있다", "『훈민정음』 해례본 정인지 서문(1446)"],
+  ];
+
+  // ---- 사전 판정 ----
+  let online = false;
+  async function detectApi() {
+    try {
+      const r = await fetch("api/status", { cache: "no-store" });
+      online = r.ok && (await r.json()).stdict === true;
+    } catch (_) { online = false; }
+    el.mode.innerHTML = online
+      ? "판정 <b>표준국어대사전 연동</b>"
+      : "판정 <b>오프라인 단어 목록</b>";
+  }
+  const defCache = new Map();
+  async function lookup(word) {
+    if (defCache.has(word)) return defCache.get(word);
+    const r = await fetch("api/lookup?q=" + encodeURIComponent(word), { cache: "no-store" });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.error || "사전 연결 실패");
+    defCache.set(word, data);
+    return data;
+  }
+  async function judge(word) {
+    if (!online) return { found: DICT.has(word), source: "offline" };
+    try {
+      const d = await lookup(word);
+      return { found: d.found, senses: d.senses, source: "stdict" };
+    } catch (e) {
+      return { found: DICT.has(word), source: "offline", note: e.message };
+    }
+  }
+
+  // ---- 상태 ----
+  const S = { hearts: 3, round: 0, score: 0, pair: "", used: new Set(), t: 0, timer: null, deadline: 0, paused: 0, busy: false, best: 0, usedPairs: new Set() };
+  try { S.best = Number(localStorage.getItem("sejong-best")) || 0; } catch (_) {}
+
+  function renderHud() {
+    el.hearts.innerHTML = "♥".repeat(S.hearts) + `<span class="lost">${"♥".repeat(3 - S.hearts)}</span>`;
+    el.round.textContent = S.round;
+    el.turn.textContent = `${Math.min(S.t, TURNS)}/${TURNS}`;
+    el.score.textContent = S.score;
+  }
+  function speak(html) {
+    el.say.innerHTML = html;
+    el.statue.classList.remove("talk");
+    void el.statue.getBoundingClientRect();
+    el.statue.classList.add("talk");
+  }
+  function setMsg(text, kind = "") { el.msg.textContent = text; el.msg.className = "msg " + kind; }
+  function setTag(text, me) { el.turnTag.textContent = text; el.turnTag.classList.toggle("me", !!me); }
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+  function addLog(who, word, senses) {
+    const li = document.createElement("li");
+    const me = who === "나";
+    li.innerHTML = `<span class="who ${me ? "me" : ""}">${who}</span><span class="w"></span><span class="def"></span>`;
+    li.querySelector(".w").textContent = word;
+    const def = li.querySelector(".def");
+    const fill = (ss) => {
+      if (!ss || !ss.length) return;
+      const s = ss[0];
+      def.textContent = `「${s.pos || "어휘"}」 ${s.definition.replace(/<[^>]+>/g, "")}`;
+      if (ss.length > 1) def.textContent += ` 외 ${ss.length - 1}개 뜻`;
+    };
+    if (senses) fill(senses);
+    else if (online) lookup(word).then((d) => fill(d.senses)).catch(() => {});
+    el.log.prepend(li);
+  }
+
+  function showOverlay(title, quote, text, btn) {
+    el.ovTitle.textContent = title;
+    if (quote) { el.ovQuote.innerHTML = ""; el.ovQuote.append(quote[0]); const c = document.createElement("cite"); c.textContent = quote[1]; el.ovQuote.append(c); }
+    el.ovQuote.hidden = !quote;
+    el.ovText.textContent = text;
+    el.ovBtn.textContent = btn;
+    el.overlay.hidden = false;
+    el.ovBtn.focus();
+  }
+
+  // ---- 진행 ----
+  function newGame() {
+    Object.assign(S, { hearts: 3, round: 0, score: 0, usedPairs: new Set() });
+    nextRound();
+  }
+  function nextRound() {
+    S.round += 1;
+    let choices = PAIRS.filter((p) => !S.usedPairs.has(p));
+    if (!choices.length) { S.usedPairs.clear(); choices = PAIRS; }
+    S.pair = pick(choices);
+    S.usedPairs.add(S.pair);
+    S.used = new Set();
+    S.t = 0;
+    el.log.innerHTML = "";
+    el.overlay.hidden = true;
+    el.cho.textContent = S.pair;
+    speak(`이번 초성은 <strong>${S.pair}</strong>이니라. 짐이 먼저 대겠노라`);
+    renderHud();
+    setMsg("");
+    setTimeout(step, 1300);
+  }
+  function step() {
+    if (S.t >= TURNS) return roundClear();
+    S.t % 2 === 0 ? sejongTurn() : myTurn();
+  }
+  async function sejongTurn() {
+    setTag("대왕의 차례");
+    lockInput(true);
+    speak("음…");
+    await sleep(900 + Math.random() * 700);
+    const left = POOL.get(S.pair).filter((w) => !S.used.has(w));
+    S.t += 1;
+    if (!left.length) {
+      S.score += 20;
+      speak("허허, 짐의 말문이 막혔도다. 네가 한 수 위로구나");
+      setMsg("대왕이 낱말을 찾지 못했다. 보너스 20점", "good");
+    } else {
+      const w = pick(left);
+      S.used.add(w);
+      speak(`<strong>${w}</strong>! 이제 네 차례니라`);
+      addLog("대왕", w);
+    }
+    renderHud();
+    await sleep(1100);
+    step();
+  }
+  function myTurn() {
+    setTag("내 차례 · 10초", true);
+    lockInput(false);
+    el.input.value = "";
+    el.input.focus();
+    startTimer(LIMIT);
+  }
+  function lockInput(lock) {
+    el.input.disabled = lock;
+    el.submit.disabled = lock;
+  }
+
+  // ---- 타이머 ----
+  function startTimer(ms) {
+    stopTimer();
+    S.deadline = performance.now() + ms;
+    const tick = () => {
+      const left = S.deadline - performance.now();
+      const ratio = Math.max(0, left / LIMIT);
+      el.bar.style.transform = `scaleX(${ratio})`;
+      el.timer.classList.toggle("hurry", left < 3000);
+      setTag(`내 차례 · ${Math.max(0, Math.ceil(left / 1000))}초`, true);
+      if (left <= 0) { S.timer = null; return timeout(); }
+      S.timer = requestAnimationFrame(tick);
+    };
+    S.timer = requestAnimationFrame(tick);
+  }
+  function stopTimer() { if (S.timer) cancelAnimationFrame(S.timer); S.timer = null; }
+  function pauseTimer() { S.paused = S.deadline - performance.now(); stopTimer(); }
+  function resumeTimer() { startTimer(S.paused); }
+
+  async function timeout() {
+    lockInput(true);
+    S.hearts -= 1;
+    S.t += 1;
+    renderHud();
+    const hint = POOL.get(S.pair).find((w) => !S.used.has(w));
+    speak(hint ? `시간이 다 되었구나. <strong>${hint}</strong> 같은 낱말이 있느니라` : "시간이 다 되었구나");
+    setMsg("10초가 지났다. 목숨 하나를 잃었다", "bad");
+    el.form.classList.remove("shake"); void el.form.offsetWidth; el.form.classList.add("shake");
+    if (S.hearts <= 0) { await sleep(1400); return gameOver(); }
+    await sleep(1600);
+    step();
+  }
+
+  // ---- 대답 ----
+  el.input.addEventListener("keydown", (e) => { if (e.isComposing && e.key === "Enter") e.preventDefault(); });
+  el.form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (S.busy || el.input.disabled || !S.timer) return;
+    const word = el.input.value.replace(/\s+/g, "");
+    const reject = (text) => {
+      setMsg(text, "bad");
+      el.form.classList.remove("shake"); void el.form.offsetWidth; el.form.classList.add("shake");
+      el.input.select();
+    };
+    if (!/^[가-힣]{2}$/.test(word)) return reject("완성된 한글 두 글자로 대답해야 한다");
+    if (pairOf(word) !== S.pair) return reject(`초성이 맞지 않는다. ${josa(word, "은", "는")} ${pairOf(word)}, 문제는 ${S.pair}`);
+    if (S.used.has(word)) return reject("이번 판에 이미 나온 낱말이다");
+
+    S.busy = true;
+    pauseTimer();
+    lockInput(true);
+    setMsg(online ? "표준국어대사전에서 찾는 중…" : "단어 목록에서 찾는 중…");
+    const res = await judge(word);
+    S.busy = false;
+    if (!res.found) {
+      lockInput(false);
+      el.input.focus();
+      resumeTimer();
+      return reject(res.source === "stdict" ? `${josa(word, "은", "는")} 표준국어대사전 두 글자 어휘에 없다` : `${josa(word, "은", "는")} 내장 단어 목록에 없다`);
+    }
+    const secs = Math.max(0, Math.ceil(S.paused / 1000));
+    S.used.add(word);
+    S.score += 10 + secs;
+    S.t += 1;
+    addLog("나", word, res.senses);
+    setMsg(`맞았다! +${10 + secs}점` + (res.note ? ` (사전 연결이 끊겨 내장 목록으로 판정)` : ""), "good");
+    speak(pick(["옳거니!", "훌륭하도다", "제법이로구나", "그 낱말도 알더냐"]));
+    renderHud();
+    await sleep(900);
+    step();
+  });
+
+  function roundClear() {
+    lockInput(true);
+    setTag("판 끝");
+    S.score += 30;
+    renderHud();
+    showOverlay(`${S.round}판을 넘겼다`, pick(QUOTES), `열 차례를 모두 마쳐 보너스 30점. 지금 ${S.score}점이다. 다음 판에서는 새 초성이 나온다.`, "다음 판");
+  }
+  function gameOver() {
+    stopTimer();
+    lockInput(true);
+    setTag("게임 오버");
+    const record = S.score > S.best;
+    if (record) { S.best = S.score; try { localStorage.setItem("sejong-best", String(S.best)); } catch (_) {} }
+    speak("열흘이면 배운다 하였거늘… 다시 겨뤄 보자꾸나");
+    showOverlay("게임 오버", QUOTES[3], `${S.round}판에서 목숨 셋을 모두 잃었다. 점수 ${S.score}점${record ? " (최고 기록)" : ` · 최고 ${S.best}점`}.`, "다시 하기");
+  }
+
+  el.ovBtn.addEventListener("click", () => {
+    if (el.ovBtn.textContent === "다음 판") nextRound();
+    else newGame();
+  });
+
+  detectApi();
+  el.cho.textContent = PAIRS.length ? pick(PAIRS) : "ㅅㅈ";
+})();
+</script>
+</body>
+</html>
