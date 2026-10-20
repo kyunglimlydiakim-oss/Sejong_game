@@ -348,7 +348,7 @@ footer a { color: inherit; }
     <div class="overlay" id="overlay">
       <h2 id="ovTitle">그(?)와 함께 세종대왕</h2>
       <p class="quote" id="ovQuote">사람마다 쉽게 익혀 날마다 씀에 편하게 하고자 할 따름이니라<cite>『훈민정음』 어제 서문(1446)</cite></p>
-      <p class="rules" id="ovText">세종대왕이 초성을 내리면 그(?)가 먼저, 그다음 내가 번갈아 그 초성의 낱말을 댄다. 1판은 두 글자, 2판은 세 글자, 3판은 네 글자이고 이 순서가 되풀이된다. 내 차례에 10초 안에 못 대면 목숨이 하나 줄고, 셋을 다 잃으면 끝난다. 열 차례를 넘기면 다음 판으로 간다.</p>
+      <p class="rules" id="ovText">세종대왕이 초성을 내리면 그(?)가 먼저, 그다음 내가 번갈아 그 초성의 낱말을 댄다. 1판은 두 글자, 2판은 세 글자, 3판은 네 글자이고 이 순서가 되풀이된다. 내 차례에 30초 안에 못 대면 목숨이 하나 줄고, 셋을 다 잃으면 끝난다. 열 차례를 넘기면 다음 판으로 간다.</p>
       <button type="button" id="ovBtn">시작하기</button>
     </div>
   </div>
@@ -371,7 +371,7 @@ footer a { color: inherit; }
   "use strict";
   const CHO = "ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎ";
   const TURNS = 10;          // 한 판의 차례 수(그 5, 나 5)
-  const LIMIT = 10000;       // 내 차례 제한 시간(ms)
+  const LIMIT = 30000;       // 내 차례 제한 시간(ms)
   const LENGTHS = [2, 3, 4];  // 판마다 글자 수: 2 → 3 → 4 → 2 …
   // 판정용 표제어: 글자 수별로 이어 붙인 문자열을 잘라 집합으로 만든다
   const DICT = {};
@@ -581,7 +581,7 @@ footer a { color: inherit; }
     step();
   }
   function myTurn() {
-    setTag("내 차례 · 10초", true);
+    setTag(`내 차례 · ${LIMIT / 1000}초`, true);
     lockInput(false);
     el.input.value = "";
     el.input.focus();
@@ -600,7 +600,7 @@ footer a { color: inherit; }
       const left = S.deadline - performance.now();
       const ratio = Math.max(0, left / LIMIT);
       el.bar.style.transform = `scaleX(${ratio})`;
-      el.timer.classList.toggle("hurry", left < 3000);
+      el.timer.classList.toggle("hurry", left < 5000);
       setTag(`내 차례 · ${Math.max(0, Math.ceil(left / 1000))}초`, true);
       if (left <= 0) { S.timer = null; return timeout(); }
       S.timer = requestAnimationFrame(tick);
@@ -618,7 +618,7 @@ footer a { color: inherit; }
     renderHud();
     const hint = POOL.get(S.pair).find((w) => !S.used.has(w));
     taunt(hint ? `땡! <strong>${hint}</strong>도 몰라?` : "땡! 시간 끝");
-    setMsg("10초가 지났다. 목숨 하나를 잃었다", "bad");
+    setMsg(`${LIMIT / 1000}초가 지났다. 목숨 하나를 잃었다`, "bad");
     act("win", { loop: S.hearts <= 0 });
     el.form.classList.remove("shake"); void el.form.offsetWidth; el.form.classList.add("shake");
     if (S.hearts <= 0) { await sleep(1400); return gameOver(); }
