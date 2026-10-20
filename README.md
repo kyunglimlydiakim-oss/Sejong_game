@@ -20,21 +20,20 @@
 `api/` 폴더의 서버리스 함수가 표준국어대사전 API를 대신 부른다. 인증키는 Vercel 환경 변수에만 두므로 방문자에게 드러나지 않는다.
 
 1. https://vercel.com 에 GitHub 계정으로 가입한다.
-2. **Add New → Project**에서 이 저장소(`ForInfomax`)를 고르고 **Import**한다.
-3. **Root Directory**를 `sejong-game`으로 바꾼다. Framework Preset은 `Other` 그대로 둔다.
+2. **Add New → Project**에서 이 저장소(`Sejong_game`)를 고르고 **Import**한다.
+3. Root Directory는 그대로(`./`) 둔다. Framework Preset은 `Other`다(`vercel.json`에 적어 두었다).
 4. **Environment Variables**에 `STDICT_API_KEY` = 발급받은 인증키를 넣는다.
 5. **Deploy**를 누른다. `https://프로젝트이름.vercel.app` 주소가 생긴다.
 
 - 함수는 서울 지역(`icn1`)에서 돌도록 `vercel.json`에 적어 두었다.
 - 같은 낱말 검색은 하루 동안 Vercel CDN에 저장해 일일 호출 한도를 아낀다.
-- Vercel은 기본 브랜치(`main`)를 정식 주소로 배포한다. 이 게임이 다른 브랜치에 있으면 main에 합치거나,
-  Vercel 프로젝트 **Settings → Git → Production Branch**를 그 브랜치로 바꾼다.
+- `main` 브랜치에 올리면 정식 주소가 자동으로 다시 배포된다.
 
 ## 내 컴퓨터에서 실행
 
-1. 이 폴더에 `api_key.txt` 파일을 만들고 표준국어대사전 인증키(16진수 32자리)만 한 줄로 적는다.
+1. 저장소 폴더에 `api_key.txt` 파일을 만들고 표준국어대사전 인증키(16진수 32자리)만 한 줄로 적는다.
    이 파일은 `.gitignore`에 들어 있어 저장소에 올라가지 않는다.
-2. 이 폴더에서 `python3 server.py`(윈도우는 `python server.py`)를 실행한다.
+2. 그 폴더에서 `python3 server.py`(윈도우는 `python server.py`)를 실행한다.
 3. 브라우저에서 http://localhost:8000 을 연다. 오른쪽 위에 '판정 표준국어대사전 연동'이 뜨면 연결된 것이다.
 
 인증키 없이 실행하면 내장 자료(표준국어대사전 내려받기 자료)로 판정한다. 파이썬 3.8 이상이면 되고, 외부 라이브러리는 필요 없다.
