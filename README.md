@@ -15,6 +15,28 @@
 - `assets/geu.webp`: 그(?)의 스프라이트. 원본의 마젠타 배경을 지우고 260×230 칸 9열 3줄로 다시 묶었다.
   1줄 대기(9컷), 2줄 만세(9컷), 3줄 속상(8컷)이다. 평소엔 대기 동작을 한다. 내가 시간을 넘기거나 게임이 끝나면 만세를, 그(?)가 막히거나 내가 한 판을 버티면 속상 동작을 한다.
 
+## 소리(`sound.js`)
+
+소리 파일 없이 Web Audio API로 실시간 합성한다. 전역 `SoundManager`로 부른다. 타입은 `sound.d.ts`에 있다.
+
+```js
+SoundManager.play("coin");               // 띠링~  사각파 B5→E6 두 음
+SoundManager.play("click");              // 톡-    삼각파 1.5kHz→700Hz, 0.045초
+SoundManager.play("levelup");            // 도-미-솔-도 사각파 아르페지오 + 옥타브 아래 삼각파
+SoundManager.play("gameover");           // 톱니파 440→55Hz 미끄럼 + 반음씩 내려가는 사각파 + 낮은 쿵
+SoundManager.play("hit", { volume: .4 }); // 화이트 노이즈(필터 5kHz→200Hz) + 사각파 160→45Hz
+SoundManager.bgm.start();                // 아리랑 후렴, 3/4박, 4분음표 104
+SoundManager.toggleMute();               // 상태는 브라우저에 기억된다
+```
+
+- 브라우저 자동 재생 정책 때문에 AudioContext는 첫 클릭·터치·키 입력 때 만든다. 그 전의 `play()`는 무시되고,
+  `bgm.start()`는 첫 상호작용 뒤로 미뤄진다. 탭을 떠나면 소리를 멈췄다가 돌아오면 이어 간다.
+- 게임에서는 정답·그(?)가 막힘 → coin, 버튼 → click, 판 승리 → levelup, 게임 오버 → gameover,
+  시간 초과 → hit, 틀린 답 → 작은 hit를 낸다.
+- 배경음악 선율은 `sound.js`의 `ARIRANG`에 계이름 숫자(도=1)로 적었다. `5:3`은 솔을 8분음표 3개 길이로,
+  `1'`은 한 옥타브 위 도를 뜻한다. 악보와 대조하지 못한 채 옮긴 것이라, 귀에 다르게 들리면 이 줄만 고치면 된다.
+- `SoundManager.renderOffline("coin")`(또는 `"bgm"`)은 소리를 오프라인으로 렌더링해 AudioBuffer로 돌려준다.
+
 ## 공개 배포(Vercel) — 누구나 링크로 접속
 
 `api/` 폴더의 서버리스 함수가 표준국어대사전 API를 대신 부른다. 인증키는 Vercel 환경 변수에만 두므로 방문자에게 드러나지 않는다.
