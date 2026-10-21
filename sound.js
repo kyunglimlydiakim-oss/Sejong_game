@@ -8,6 +8,7 @@
  *
  * 브라우저 자동 재생 정책: AudioContext는 사용자가 처음 누르거나 키를 칠 때 만들고 깨운다.
  * 그 전에 play()를 부르면 조용히 무시하고, bgm.start()는 첫 상호작용 뒤로 미룬다.
+ * 아이폰 무음 스위치가 켜져 있어도 들리도록 오디오 세션을 '재생'으로 바꾼다(kickMediaSession).
  * 타입 정의는 sound.d.ts에 있다. renderOffline(name)으로 소리를 파일 없이 미리 렌더링할 수 있다.
  */
 (function () {
@@ -236,17 +237,52 @@
   };
 
   // ---- 오디오 깨우기 ----
+  // 아이폰·아이패드는 무음(벨소리) 스위치를 켜 두면 Web Audio 소리를 죽인다.
+  // Safari 17부터는 audioSession을 'playback'으로 바꾸면 미디어 소리로 취급된다.
+  // 그보다 오래된 iOS는 사용자 동작 안에서 HTML <audio>를 한 번 재생하면 같은 효과가 난다.
+  // 그 <audio>에 넣을 0.1초짜리 무음 WAV는 파일 없이 여기서 만든다.
+  function silentWavUrl() {
+    const n = 2205, v = new DataView(new ArrayBuffer(44 + n * 2));
+    const w = (o, str) => { for (let i = 0; i < str.length; i++) v.setUint8(o + i, str.charCodeAt(i)); };
+    w(0, "RIFF"); v.setUint32(4, 36 + n * 2, true); w(8, "WAVE"); w(12, "fmt ");
+    v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+    v.setUint32(24, 22050, true); v.setUint32(28, 44100, true); v.setUint16(32, 2, true); v.setUint16(34, 16, true);
+    w(36, "data"); v.setUint32(40, n * 2, true);
+    return URL.createObjectURL(new Blob([v.buffer], { type: "audio/wav" }));
+  }
+  let sessionKicked = false;
+  function kickMediaSession() {
+    if (sessionKicked) return;
+    sessionKicked = true;
+    try { if (navigator.audioSession) navigator.audioSession.type = "playback"; } catch (_) {}
+    try {
+      const el = new Audio(silentWavUrl());
+      el.setAttribute("playsinline", "");
+      const p = el.play();
+      if (p && p.catch) p.catch(() => { sessionKicked = false; });
+    } catch (_) { sessionKicked = false; }
+  }
+
   function unlock() {
     if (!AC) return;
+    kickMediaSession();
     if (!ctx) {
       ctx = new AC();
       ({ master, sfx: sfxBus, bgm: bgmBus } = build(ctx));
       noiseBuf = makeNoise(ctx);
     }
-    if (ctx.state === "suspended") ctx.resume();
+    if (ctx.state !== "running") {
+      ctx.resume();
+      // 옛 iOS는 사용자 동작 안에서 버퍼를 한 번 틀어야 소리가 풀린다
+      const s = ctx.createBufferSource();
+      s.buffer = ctx.createBuffer(1, 1, 22050);
+      s.connect(ctx.destination);
+      s.start(0);
+    }
     if (bgm.wanted && !bgm.playing) bgm.start();
   }
-  ["pointerdown", "keydown", "touchend"].forEach((ev) => window.addEventListener(ev, unlock, { capture: true, passive: true }));
+  // iOS Safari는 pointerdown만으로는 소리를 풀어 주지 않는 경우가 있어 touchend·click도 함께 듣는다
+  ["pointerdown", "touchend", "click", "keydown"].forEach((ev) => window.addEventListener(ev, unlock, { capture: true, passive: true }));
   // 탭을 떠나면 배경음악을 쉬고, 돌아오면 이어 간다
   document.addEventListener("visibilitychange", () => {
     if (!ctx) return;
@@ -256,7 +292,8 @@
 
   function play(name, opts = {}) {
     const fn = SFX[name];
-    if (!fn || !ctx || ctx.state !== "running") return;
+    // 깨우는 중(suspended)이어도 예약해 둔다. resume이 끝나면 바로 이어서 들린다.
+    if (!fn || !ctx || ctx.state === "closed") return;
     fn(ctx, sfxBus, ctx.currentTime + 0.005, opts.volume ?? 1);
   }
 
